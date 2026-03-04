@@ -1,0 +1,74 @@
+
+#include "helper_functions.h"
+#include <string>
+
+// Converts an integer to a character works up to a base 16 - used in the addFunction
+char intToChar(int num){ 
+      // checks digit below 10
+      if(num < 10){
+            // returns the char value of the int by converting to ASCII value for base 2, 10, and 16 (up to 9)
+            return ('0' + num);
+      }
+      // converts numbers 10 and above to letters for base 16 
+      else{
+            // returns the char value of the int by converting to ASCII value
+            return ('A' + (num - 10));
+      } 
+}
+
+// Converts a char into and int works up to a base 16 - used in the addFunction
+int charToInt(char value){
+      // checks for 0-9 values
+      if (value >= '0' && value <= '9'){
+            // returns the int value of the char by converting from ASCII value works for base 2, 10, and 16 (up to 9)
+            return (value - '0');
+      }
+      // checks if values are in letter ranges of base 16 - handles lower and upper case
+      else if (value >= 'A' && value <= 'F'){
+            return (10 + (value - 'A'));
+      }
+      else if (value >= 'a' && value <= 'f'){
+            return (10 + (value - 'a'));
+      }
+      return 0; 
+}
+
+// takes two strings that represent numbers (numberA/numberB), the number of digits in each string (m), and the base (base) uses additon algorithm to add the two numbers returns result as a string
+string addFunction(string numberA, string numberB, int m, int base)
+{
+      // variables required for addition (Step 1)
+      string strResult = ""; // initialize result
+      int carry = 0; // initalizing carry to 0
+      int c_i = 0; // varaible holds the result of the additon of the two current place numbers(a_i + b_i) and the carry value
+      
+      // for loop that executes algorithm (Steps 2-6)- parameters complete step 2/3/6
+      // for loops iteratates backwards since far right number is the highest index 
+      for (int i = m - 1; i >= 0; i--){   // step 6: moves column one to the left by decremting i
+            
+            // converting the char at each 'i' to a number by changing ASCII value
+            int numA = charToInt(numberA[i]);
+            int numB = charToInt(numberB[i]);
+
+            // adding the two numbers and the carry together (Step 4)
+            c_i = numA + numB + carry;
+
+            // checking if there is a remainder(overflow) depending on the base system entered (Step 5)
+            if (c_i >= base){
+                  carry = c_i / base;
+                  c_i = c_i % base;
+            }else{
+                  carry = 0;
+            }
+
+            // pushing result of c_i to the string result after converting to string
+            strResult = intToChar(c_i) + strResult;
+      }
+
+      // adding in the last carry value if nessecary - converts carry to a string (Step 7)
+      if(carry > 0){
+           strResult = intToChar(carry) + strResult;
+      }
+
+      // returns results and ends funciton (Step 8/9)
+      return strResult; 
+}
