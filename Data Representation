@@ -1,1 +1,164 @@
 
+
+#include "helper_functions.h"
+#include <string>
+using namespace std;
+
+
+// helper function that converts a string number in given base to int
+int NumberStringperBaseToInt(string numberString, int base){
+    // Varriable used to hold result that will be returned
+    int result = 0;
+
+    // for loop that loops though the numberstring that is passed to the function as an argument 
+    for ( char c : numberString){
+        // edge case that skips over spaces and tabs
+        if(c == ' ' || c == '\t'){
+            continue;
+        }
+        // local var used to hold digit being manipulated
+        int tempNum = 0;
+
+        // if else statement converting number less than 10
+        if (c >= '0' && c <= '9'){
+            tempNum = c - '0'; // converting to a digit based on ASCII table position
+        } 
+        else if( c >= 'A' && c <= 'F'){ // handles capital letters beteen A and F
+            tempNum = 10 + (c - 'A'); // converting based on ASCII table position
+        }
+        else if (c >= 'a' && c <= 'f'){ // handles lower case letters bewteen a and f
+            tempNum = 10 + (c - 'a'); // converting based on ASCII table position
+        }
+        else{
+            continue; // handles edge case for invalid entries
+        }
+        // Validation to confirm tempNum is in the correct base
+        if(tempNum >= base){
+            continue; 
+        }
+
+        // adding the converted number to the reuslt after multiply by the base
+        result = result * base + tempNum;
+    }
+    return result;
+}
+
+// Helper function used inside IntToNumberStringperBase to conver each int to a char
+char intToChar(int num, int base){
+    // input validation
+    if (num < 0 || num >= base){
+        return '?'; // digit is not valid in the base
+    }
+
+    // check for number range 0-9 and convert
+    if (num >= 0 && num <= 9){
+        return num + '0'; // converting based on ASCII table value
+    }
+    // converting A-F for higher base
+    else{
+        return (num - 10) + 'A'; // converting based on ASCII table value
+    }
+}
+
+// helper function that converts an integer to a string given the base of the integer
+string IntToNumberStringperBase(int number, int base){
+    // Variable used to hold result that will be returned
+    string result = "";
+    int count = 0; // variable used to space out binary into 4 bits
+    int limit = 0; // variable to run loop for biniary to add leading 0s
+
+    // handling edge cases
+    if (number == 0){
+        if (base == 2) return "0000";      // binary 4-bit minimum
+        if (base == 16) return "0x0";      // hex 0
+        return "0";                         // decimal 0
+    }
+    
+    // setting up to add extra zeros if binary for a 16 bits
+    if (base == 2){
+        limit = 16;
+    } 
+
+    // while loop that continoulsy divided by base and converts the remainder to a string by useing the helper funciton inttoChar
+    while (number > 0 || count < limit){
+        // adding space every 4 bits
+        if (base == 2 && count > 0 && count % 4 == 0){
+            result = " " + result;
+        }
+        // finding the remainder of the number to convert to a string 
+        int remainder = number % base;
+
+        // converting the remainder to a stirng and adding it to the result
+        result = intToChar(remainder, base) + result;
+
+        // moving the algorithm to the next digit
+        number = number / base;
+
+        // incrementing count to track the bit counter for binary
+        count++;
+    }
+
+    // adding correct formating for hex
+    if (base == 16) {
+        result = "0x" + result;
+    }
+
+    // returning the string value
+    return result;
+}
+
+// helper function that converts each decimal to a 4 bit binary string
+string binary4bit(int num){
+    // variable to hold the result
+    string result = "";
+
+    //  loops four times and decrements every time to build the 4bit string
+    for (int i = 3; i >= 0; i--){
+        // if else statement that determines if the bit should be 1 or 0
+        if ((num >> i) % 2 != 0)
+            result = result + '1';
+        else{
+            result = result + '0';
+        }
+    }
+    
+    return result;
+}
+
+// helper function that adds two decimal strings
+string BCDAdd(string a, string b)
+{
+    string result = ""; // initialize result
+    int carry = 0; // holds the carry value
+    
+
+    // converting strings to ints before manipulation
+    int numA = NumberStringperBaseToInt(a, 10);
+    int numB = NumberStringperBaseToInt(b, 10);
+
+    int sum = numA + numB;
+
+    // Count digits
+    int temp = sum;
+    int numDigits = 0;
+    if (temp == 0) numDigits = 1;
+    while (temp > 0) {
+        temp /= 10;
+        numDigits++;
+    }
+
+    // Convert each decimal digit to BCD and build the result string
+    int tempSum = sum;
+    for (int i = 0; i < numDigits; i++) {
+        int digit = tempSum % 10;
+        result = binary4bit(digit) + result;
+        tempSum /= 10;
+    }
+
+    // Pad result to at least 8 bits
+    while (result.size() < 8) result = "0000" + result;
+     
+    // returning result and converting to string thats properly formated 
+    return result + "b";
+}
+
